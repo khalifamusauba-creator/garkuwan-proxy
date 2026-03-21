@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garkuwan Imrana AI</title>
+    <style>
+        :root { --p: #075e54; --bg: #e5ddd5; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        .header { background: var(--p); color: white; padding: 15px; text-align: center; font-weight: bold; }
+        #chat { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 80%; padding: 12px; border-radius: 15px; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .u { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 0; }
+        .a { align-self: flex-start; background: white; border-bottom-left-radius: 0; }
+.input-area { display: flex; padding: 10px; background: #f0f0f0; align-items: center; border-top: 1px solid #ccc; }
+        input[type="text"] { flex: 1; padding: 12px; border: none; border-radius: 25px; outline: none; font-size: 16px; }
+        .plus-btn { background: #ddd; width: 40px; height: 40px; border-radius: 50%; display: flex; 
+                    align-items: center; justify-content: center; margin-right: 8px; cursor: pointer; font-size: 24px; color: #555; }
+        button { background: var(--p); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; margin-left: 8px; font-size: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="header">Garkuwan Imrana AI</div>
+<div id="chat"><div class="msg a">Sannu! Ni ne Garkuwan AI. Zaka iya tura mini hoto ta alamar (+).</div></div>
+<div class="input-area">
+    <label class="plus-btn" for="f">+</label>
+    <input type="file" id="f" style="display:none" accept="image/*" onchange="previewFile()">
+    <input type="text" id="t" placeholder="Rubuta sako anan...">
+    <button onclick="ask()">></button>
+</div><script>
+    let base64Image = "";
+    let mimeType = "";
+
+    function previewFile() {
+        const file = document.getElementById('f').files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            base64Image = reader.result.split(',')[1];
+            mimeType = file.type;
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `<div class="msg u">🖼️ An zabi hoto: <b>${file.name}</b></div>`;
+            chat.scrollTop = chat.scrollHeight;
+        };
+        if (file) reader.readAsDataURL(file);
+    }async function ask() {
+        const i = document.getElementById('t');
+        const b = document.getElementById('chat');
+        const txt = i.value.trim();
+        if (!txt && !base64Image) return;
+
+        if(txt) b.innerHTML += `<div class="msg u">${txt}</div>`;
+        i.value = "";
+        b.scrollTop = b.scrollHeight;
+
+        try {
+            const res = await fetch('https://garkuwan-proxy-tyda.vercel.app/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: txt, image: base64Image, mimeType: mimeType })
+            });
+            const data = await res.json();
+            b.innerHTML += `<div class="msg a">${data.reply}</div>`;
+            base64Image = ""; // Share hoton bayan an tura
+        } catch (e) {
+            b.innerHTML += `<div class="msg a">Ba a samu haduwa da AI ba.</div>`;
+        }
+        b.scrollTop = b.scrollHeight;
+    }
+</script>
+</body>
+</html>
