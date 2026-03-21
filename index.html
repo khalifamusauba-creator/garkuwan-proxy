@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garkuwan Imrana AI</title>
+    <style>
+        :root { --p: #075e54; --bg: #f4f4f9; --white: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        /* Sidebar */
+        .sidebar { width: 0; background: #202123; color: white; transition: 0.3s; overflow-x: hidden; display: flex; flex-direction: column; }
+        .sidebar.active { width: 260px; }
+        .sidebar-header { padding: 15px; font-weight: bold; border-bottom: 1px solid #444; }
+        .history-list { flex: 1; padding: 10px; font-size: 14px; }
+        /* Main Chat */
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: var(--bg); position: relative; }
+        .header { background: var(--white); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ddd; }
+        .menu-btn { font-size: 24px; cursor: pointer; color: #555; }
+#chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5; }
+        .u { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
+        .a { align-self: flex-start; background: white; color: #333; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        /* Input Area */
+        .input-container { padding: 15px; background: var(--bg); }
+        .input-box { background: white; border-radius: 25px; display: flex; align-items: center; padding: 5px 15px; border: 1px solid #ddd; }
+        .plus-btn { font-size: 24px; color: #666; cursor: pointer; margin-right: 10px; }
+        .model-select { border: none; outline: none; background: #eee; border-radius: 15px; padding: 5px 10px; font-size: 12px; margin: 0 10px; }
+        input[type="text"] { flex: 1; border: none; outline: none; padding: 10px; font-size: 16px; }
+        .send-btn { color: #007bff; font-size: 22px; cursor: pointer; background: none; border: none; }
+    </style>
+</head><body>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">Tarihin Hira</div>
+    <div class="history-list" id="history">Babu tarihin hira tukunna...</div>
+</div>
+<div class="main-chat">
+    <div class="header">
+        <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+        <div style="font-weight: bold; color: #333;">Garkuwan AI</div>
+        <div style="width: 24px;"></div>
+    </div>
+    <div id="chat">
+        <div class="msg a">Barka da zuwa! Ni ne Garkuwan Imrana. Ta yaya zan taimake ka?</div>
+    </div>
+    <div class="input-container">
+        <div class="input-box">
+            <label class="plus-btn" for="f">+</label>
+            <input type="file" id="f" style="display:none" onchange="previewFile()">
+            <select class="model-select"><option>Fast</option></select>
+            <input type="text" id="t" placeholder="Rubuta sakon ka...">
+            <button class="send-btn" onclick="ask()">➤</button>
+        </div>
+    </div>
+  </div><script>
+    let base64Image = ""; let mimeType = "";
+    
+    // Budewa da rufe Sidebar (Tarihin hira)
+    function toggleSidebar() { 
+        document.getElementById('sidebar').classList.toggle('active'); 
+    }
+    
+    // Karbar hoto ko file
+    function previewFile() {
+        const file = document.getElementById('f').files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            base64Image = reader.result.split(',')[1]; 
+            mimeType = file.type;
+            const b = document.getElementById('chat');
+            b.innerHTML += `<div class="msg u">📄 An zaba: <b>${file.name}</b></div>`;
+            b.scrollTop = b.scrollHeight;
+        };
+        if (file) reader.readAsDataURL(file);
+    }async function ask() {
+        const i = document.getElementById('t'); 
+        const b = document.getElementById('chat');
+        const txt = i.value.trim(); 
+        if (!txt && !base64Image) return;
+
+        b.innerHTML += `<div class="msg u">${txt}</div>`; 
+        i.value = "";
+        b.scrollTop = b.scrollHeight;
+
+        try {
+            const res = await fetch('https://garkuwan-proxy-x4ta.vercel.app/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: txt, image: base64Image, mimeType: mimeType })
+            });
+            const data = await res.json();
+            b.innerHTML += `<div class="msg a">${data.reply || "Ba a samu amsa ba."}</div>`;
+            base64Image = ""; mimeType = ""; // Wanke hoton bayan an tura
+        } catch (e) { 
+            b.innerHTML += `<div class="msg a">Kuskure: Network dinka ko Vercel dinka yana da matsala.</div>`; 
+        }
+        b.scrollTop = b.scrollHeight;
+    }
+</script>
+</body>
+</html>
