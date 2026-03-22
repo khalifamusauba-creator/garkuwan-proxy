@@ -6,7 +6,7 @@
     <title>Garkuwan Imrana AI</title>
     <style>
         :root { --p: #075e54; --bg: #f4f4f9; --white: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 0; background: #202123; color: white; transition: 0.3s; overflow-x: hidden; display: flex; flex-direction: column; z-index: 1000; }
         .sidebar.active { width: 260px; }
         .sidebar-header { padding: 20px; font-weight: bold; border-bottom: 1px solid #444; }
@@ -46,36 +46,35 @@
             <button class="send-btn" onclick="ask()">➤</button>
         </div>
     </div>
-</div>
-<script>
-    let base64Image = ""; let mimeType = "";
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }function previewFile() {
+</div><script>
+    let b64 = ""; let mime = "";
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    
+    function previewFile() {
         const file = document.getElementById('f').files[0];
         const reader = new FileReader();
         reader.onloadend = () => {
-            base64Image = reader.result.split(',')[1]; mimeType = file.type;
-            const b = document.getElementById('chat');
-            b.innerHTML += `<div class="msg u">📄 An zaba: ${file.name}</div>`;
-            b.scrollTop = b.scrollHeight;
+            b64 = reader.result.split(',')[1]; mime = file.type;
+            document.getElementById('chat').innerHTML += `<div class="msg u">📄 An zaba: ${file.name}</div>`;
         };
         if (file) reader.readAsDataURL(file);
     }
 
     async function ask() {
         const i = document.getElementById('t'); const b = document.getElementById('chat');
-        const txt = i.value.trim(); if (!txt && !base64Image) return;
+        const txt = i.value.trim(); if (!txt && !b64) return;
         b.innerHTML += `<div class="msg u">${txt}</div>`; i.value = "";
         b.scrollTop = b.scrollHeight;
         try {
-            const res = await fetch('https://garkuwan-proxy-x4ta.vercel.app/api/chat', {
+            const res = await fetch('https://garkuwan-proxy-tc2p.vercel.app/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: txt, image: base64Image, mimeType: mimeType })
+                body: JSON.stringify({ prompt: txt, image: b64, mimeType: mime })
             });
             const data = await res.json();
-            b.innerHTML += `<div class="msg a">${data.reply || "Error"}</div>`;
-            base64Image = ""; mimeType = "";
-        } catch (e) { b.innerHTML += `<div class="msg a">Network Error!</div>`; }
+            b.innerHTML += `<div class="msg a">${data.reply || "Error!"}</div>`;
+            b64 = ""; mime = "";
+        } catch (e) { b.innerHTML += `<div class="msg a">Network Error! Duba Vercel dinka.</div>`; }
         b.scrollTop = b.scrollHeight;
     }
 </script>
