@@ -41,3 +41,37 @@
 <div class="chat-container" id="chat-container">
     <div class="message ai-message">Sannu! Ni ne AI dinka. Imrana Umar Abubakar ne ya kera ni.</div>
 </div>
+    </div>
+<div class="input-area">
+    <div class="input-container">
+        <i class="far fa-smile icons"></i>
+        <input type="text" id="user-input" placeholder="Rubuta sako...">
+        <i class="fas fa-paperclip icons"></i>
+        <i class="fas fa-camera icons"></i>
+    </div>
+    <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+</div>
+<script>
+    async function sendMessage() {
+        const input = document.getElementById('user-input');
+        const container = document.getElementById('chat-container');
+        if (!input.value.trim()) return;
+        const userText = input.value;
+        container.innerHTML += `<div class="message user-message">${userText}</div>`;
+        input.value = '';
+        container.scrollTop = container.scrollHeight;
+        try {
+            const response = await fetch('/.netlify/functions/ask', {
+                method: 'POST',
+                body: JSON.stringify({ message: userText })
+            });
+            const data = await response.json();
+            container.innerHTML += `<div class="message ai-message">${data.reply || data.error}</div>`;
+        } catch (e) {
+            container.innerHTML += `<div class="message ai-message">Yi hakuri, an samu matsala.</div>`;
+        }
+        container.scrollTop = container.scrollHeight;
+    }
+</script>
+</body>
+</html>
